@@ -1,12 +1,33 @@
-import java.io.Console;
-import java.util.*;
+import java.util.Map;
 import java.util.HashMap;
+import spark.ModelAndView;
+import spark.template.velocity.VelocityTemplateEngine;
+import static spark.Spark.*;
 
 public class Scrabble {
+  public static void main(String[] args) {
+    String layout = "templates/layout.vtl";
 
-  public static void main(String[] args) {}
+    get("/", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      model.put("template", "templates/home.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
 
-  public Integer scrabbleLetterScore(String letter) {
+    get("/detector", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      model.put("template", "templates/detector.vtl");
+
+      String word = request.queryParams("scrabbleWord");
+      int score = scrabbleScore(word);
+      model.put("word", score);
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+
+  }
+
+  public static Integer scrabbleLetterScore(String letter) {
     HashMap<String, Integer> alphabet = new HashMap();
     alphabet.put("A", 1);
     alphabet.put("B", 3);
@@ -44,10 +65,11 @@ public class Scrabble {
 
 
   }
-  public Integer scrabbleScore(String word) {
+  public static Integer scrabbleScore(String word) {
+    Integer wordScore = 0;
     String upperCaseWord = word.toUpperCase();
     String[] letterArray = upperCaseWord.split("");
-    Integer wordScore = 0;
+
     for (Integer i = 0; i < letterArray.length; i++) {
       Integer letterScore = scrabbleLetterScore(letterArray[i]);
       wordScore = wordScore + letterScore;
